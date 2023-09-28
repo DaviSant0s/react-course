@@ -1,11 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
 
-const Post = ( { post } ) => {
+const Post = ( { post, handleClick } ) => {
   console.log('Filho renderizou');
   return(
     <div key={post.id}>
-      <h1>{post.title}</h1>
+      <h1 
+        style={ {fontSize: '20px'} }
+        onClick={() => handleClick(post.title)}
+      >
+        {post.title}
+      </h1>
+
       <p>{post.body}</p>
     </div>
 
@@ -16,6 +22,8 @@ function App() {
   console.log('Pai renderizou!');
   const [ posts, setPosts ] = useState([]);
   const [ value, setValue ] = useState('');
+  const input = useRef('davi');
+  const contador = useRef(0);
 
   // simular um component did mount
   useEffect(() => {
@@ -26,16 +34,33 @@ function App() {
       setPosts(posts);
     };
 
-    setTimeout(buscaDados, 5000);
+    buscaDados();
 
 
   }, []);
 
+  useEffect(() => {
+    input.current.focus();
+    console.log(input);
+
+  }, [ value ]);
+
+  const handleClick = (value) => {
+    setValue(value);
+  }
+
+  useEffect(() => {
+    contador.current += 1;
+  })
+
   return (
     <div className='App'>
 
+      <p>Renderizou {contador.current}x </p>
+
       <p>
         <input
+          ref={input}
           type='search'
           value={value}
           onChange={e => setValue(e.target.value)}
@@ -50,7 +75,7 @@ function App() {
           posts.length > 0 &&
             posts.map( post => {
               return(
-                <Post key={post.id} post={post} />
+                <Post key={post.id} post={post} handleClick={handleClick}/>
               );
           
             })
