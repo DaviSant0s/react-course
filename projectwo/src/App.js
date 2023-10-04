@@ -1,95 +1,46 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import './App.css';
+import { useContext } from 'react';
 
-const Post = ( { post, handleClick } ) => {
-  console.log('Filho renderizou');
+const globalState = {
+  title: 'O título que contexto',
+  body: 'O body do contexto',
+  counter: 0
+};
+
+const GlobalContext = React.createContext();
+
+const Div = () => {
   return(
-    <div key={post.id}>
-      <h1 
-        style={ {fontSize: '20px'} }
-        onClick={() => handleClick(post.title)}
-      >
-        {post.title}
-      </h1>
+    <>
+    <H1 />
+    <P />
+    </>
+  )
+}
+const H1 = () => {
+  const theContext = useContext(GlobalContext);
+  const { contextState: {title, counter} } = theContext
+  return(
+    <h1>{title} {counter}</h1>
+  )
+}
 
-      <p>{post.body}</p>
-    </div>
-
-  );
+const P = () => {
+  const theContext = useContext(GlobalContext);
+  const { contextState: {body, counter}, contextState, setContextState } = theContext
+  return(
+    <p onClick={e => setContextState({...contextState, counter: counter + 1})}>{body}</p>
+  )
 }
 
 function App() {
-  console.log('Pai renderizou!');
-  const [ posts, setPosts ] = useState([]);
-  const [ value, setValue ] = useState('');
-  const input = useRef('davi');
-  const contador = useRef(0);
-
-  // simular um component did mount
-  useEffect(() => {
-    const buscaDados = async () => {
-      
-      const resposta = await fetch('https://jsonplaceholder.typicode.com/posts');
-      const posts = await resposta.json();
-      setPosts(posts);
-    };
-
-    buscaDados();
-
-
-  }, []);
-
-  useEffect(() => {
-    input.current.focus();
-    console.log(input);
-
-  }, [ value ]);
-
-  const handleClick = (value) => {
-    setValue(value);
-  }
-
-  useEffect(() => {
-    contador.current += 1;
-  })
+  const [contextState, setContextState] = useState(globalState);
 
   return (
-    <div className='App'>
-
-      <p>Renderizou {contador.current}x </p>
-
-      <p>
-        <input
-          ref={input}
-          type='search'
-          value={value}
-          onChange={e => setValue(e.target.value)}
-        />
-        
-      </p>
-      
-
-      {useMemo(() => {
-        return(
-          
-          posts.length > 0 &&
-            posts.map( post => {
-              return(
-                <Post key={post.id} post={post} handleClick={handleClick}/>
-              );
-          
-            })
-
-        );
-
-
-      }, [posts])}
-
-     
-
-      {posts.length <= 0 && (<p>'Ainda não existem posts'</p>)}
-
-    </div>
+    <GlobalContext.Provider value={{contextState, setContextState}}>
+        <Div />
+    </GlobalContext.Provider>
   );  
 }
 
