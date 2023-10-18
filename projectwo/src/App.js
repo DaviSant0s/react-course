@@ -1,72 +1,47 @@
-import { createContext, useContext, useReducer } from 'react';
-import './App.css';
-import { useRef } from 'react';
+import { useRef } from "react";
+import { useEffect } from "react";
+import { useState } from "react";
 
-// action.js
-export const actions = {
-  CHANGE_TITLE: 'CHANGE_TITLE',
+const useMyHook = (callBack, delay = 1000) => {
+  const savedCb = useRef();
+
+  // pra gente lembrar qual foi o último callback que foi chamado
+  useEffect(() => {
+    savedCb.current = callBack;
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      savedCb.current();
+    }, delay);
+
+    // garante que todo vez que eu sair do componente, o intervalo vai set limpo
+    return () => clearInterval(interval);
+
+  }, [delay]);
+
+
 }
 
-// data.js
-export const globalState = {
-  title: 'O título que contexto',
-  body: 'O body do contexto',
-  counter: 0,
-};
-
-// reducer.js
-export const reducer = (state, action) => {
-  switch (action.type){
-    case actions.CHANGE_TITLE: {
-      console.log('mudar título');
-      return {...state, title: action.payload};
-    }
-  }
-  return {...state};
-}
-
-// AppContext.jsx
-export const Context = createContext();
-export const  AppContext = ({ children }) => {
-  const [state, dispatch] = useReducer(reducer, globalState);
-
-  const changeTitle = (payload) => {
-    dispatch({type: actions.CHANGE_TITLE, payload });
-  }
-
-  return(
-    <Context.Provider value={{state, changeTitle}}>
-      {children}
-    </Context.Provider>
-  )
-  
-};
-
-// H1/index.jsx
-export const H1 = () => {
-  const context = useContext(Context);
-  const inputRef = useRef();
-
-  return(
-    <>
-      <h1 onClick={() => context.changeTitle(inputRef.current.value)}>{context.state.title}</h1>
-
-      <input type='text' ref={inputRef}/>
-    </>
-  );
-}
-
-
-
-// App.js
 function App() {
+  const [ counter, setCounter ] = useState(0);
+  const [ delay, setDelay ] = useState(1000);
+  const [ incrementor, setIncrementor ] = useState(100);
+
+  useMyHook(() => setCounter((c) => c + 1), delay);
 
   return (
-      <AppContext>
-        <div>
-            <H1/>
-        </div>
-      </AppContext>
+
+    <div>
+        <h1>{counter}</h1>
+        <h1>{delay}</h1>
+
+        <button onClick={() => setDelay( (d) => d + incrementor )}>+ {incrementor}</button>
+        <button onClick={() => setDelay( (d) => d - incrementor )}>- {incrementor}</button>
+
+        <input type="number" value={incrementor} onChange={(e) => setIncrementor(Number(e.target.value))}></input>
+    </div>
+
   );  
 }
 
