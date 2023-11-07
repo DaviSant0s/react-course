@@ -1,99 +1,51 @@
-import { Component } from 'react';
+import { useEffect } from "react";
+import { useState } from "react";
 
-import './styles.css';
+const useFetch = (url, options) => {
+  const [ result, setResult ] = useState(null);
+  const [ loading, setLoading ] = useState(false);
 
-import { loadPosts } from '../../components/utils/load-posts';
-import { Posts } from '../../components/Posts';
-import { Button } from '../../components/Button';
-import TextInput from '../../components/TextInput';
+  useEffect(() => {
+    console.log('EFFECT', new Date().toLocaleString())
+    setLoading(true);
 
+    const fetchData = async () => {
+      
+      await new Promise(r => setTimeout(r, 3000))
 
-
-export class Home extends Component{
-    state = { 
-      posts: [],
-      allPosts: [],
-      page: 0, 
-      postsPerPages: 2,
-      searchValue: ''
-    };
-
-    async componentDidMount(){
-      await this.loadPosts();
+      try{
+        const response = await fetch(url, options);
+        const jsonResult = await response.json();
+        setResult(jsonResult);
+        setLoading(false);
+      } catch(e){
+        setLoading(false);
+        throw e;
+      }
+      
     }
 
-    loadPosts = async () => {
-      const { page, postsPerPages} = this.state;
+    fetchData();
+    
+  }, [url, options]);
 
-      const postsAndPhotos = await loadPosts();
+  return[result, loading]
+}
 
-      this.setState({ 
-        posts: postsAndPhotos.slice(page, postsPerPages),
-        allPosts: postsAndPhotos
-      })
-    } 
+export const Home = () => {
+  const [ result, loading ] = useFetch('https://jsonplaceholder.typicode.com/posts', {
+    method: 'GET', Headers: {
+      ABC: '1',
+    },
+  });
 
-    loadMorePosts = () => {
-      const {page, postsPerPages, allPosts, posts} = this.state;
-
-      const nextPage = page + postsPerPages;
-      const nextPosts = allPosts.slice(nextPage, nextPage + postsPerPages);
-
-      posts.push(...nextPosts);
-
-      this.setState({posts, page: nextPage});
-
-    } 
-
-    handleChange = (e) => {
-      const { value } = e.target;
-      this.setState({searchValue: value});
-    }
-
-  render() {
-
-    const { posts, page, postsPerPages, allPosts, searchValue} = this.state;
-    const noMorePosts = page + postsPerPages >= allPosts.length;
-
-    const filteredPosts = !!searchValue ? allPosts.filter(post => {
-      return post.title.toLowerCase().includes(searchValue.toLowerCase());
-    }) : posts;
-
-    return (
-
-      <section className='container'>
-
-        <div className='search-container'>
-        {!!searchValue && (
-          <h1>Search Value: {searchValue}</h1>
-        )}
-
-
-        <TextInput handleChange={this.handleChange} searchValue={searchValue}/>
-
-        </div>
-
-        {filteredPosts.length > 0 && (
-          <Posts posts = {filteredPosts}/>
-        )}
-
-        {filteredPosts.length === 0 && (
-          <p>Não há posts</p>
-        )}
-
-        <div className='button-container'>
-          {!searchValue && (
-            <Button 
-            text={'Load More Posts'}
-            onClick = {this.loadMorePosts}
-            disabled={noMorePosts}
-          />
-          )}
-          
-        </div>
-        
-      </section>
-    );
+  if (loading) {
+    return <p>Loading...</p>
+  } 
   
+  if (!loading && result){
+    console.log(result)
   }
+
+  return <p>oi</p>
 }
