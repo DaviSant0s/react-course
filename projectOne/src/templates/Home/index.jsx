@@ -1,51 +1,113 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useState } from "react";
+
+const isObjectEqual = (objA, objB) => {
+  return JSON.stringify(objA) === JSON.stringify(objB);
+}
 
 const useFetch = (url, options) => {
   const [ result, setResult ] = useState(null);
   const [ loading, setLoading ] = useState(false);
+  const [ shouldLoad, setShouldLoad ] = useState(false);
+  const urlRef = useRef(url);
+  const optionsRef = useRef(options);
 
   useEffect(() => {
-    console.log('EFFECT', new Date().toLocaleString())
+    let changed = false;
+
+    if (!isObjectEqual(url, urlRef.current)){
+      urlRef.current = url;
+      changed = true;
+    }
+
+    if (!isObjectEqual(options, optionsRef.current)){
+      optionsRef.current = options;
+    }
+
+    if (changed){
+      setShouldLoad(s => !s);
+      changed = true;
+    }
+  }, [url, options])
+
+  useEffect(() => {
+    let wait = false;
+    console.log('EFFECT', new Date().toLocaleString());
+    console.log(optionsRef.current.Headers);
+
     setLoading(true);
 
     const fetchData = async () => {
       
-      await new Promise(r => setTimeout(r, 3000))
+      await new Promise(r => setTimeout(r, 3000));
 
       try{
-        const response = await fetch(url, options);
+        const response = await fetch(urlRef.current, optionsRef.current);
         const jsonResult = await response.json();
-        setResult(jsonResult);
-        setLoading(false);
+
+
+        if (!wait){
+          setResult(jsonResult);
+          setLoading(false);
+        }
+
+
       } catch(e){
-        setLoading(false);
+
+        if (!wait){
+          setLoading(false);
+        }
         throw e;
       }
       
     }
 
     fetchData();
+
+    return () => {
+      wait = true;
+    }
     
-  }, [url, options]);
+  }, [shouldLoad]);
 
   return[result, loading]
 }
 
 export const Home = () => {
-  const [ result, loading ] = useFetch('https://jsonplaceholder.typicode.com/posts', {
-    method: 'GET', Headers: {
-      ABC: '1',
+  // 123456789
+  const [ postId, setPostId ] = useState('');
+  const [ result, loading ] = useFetch('https://jsonplaceholder.typicode.com/posts/' + postId, {
+    Headers: {
+      abc: '2' + postId,
     },
   });
+
+  useEffect(() => {
+    console.log('ID DO POST ', postId);
+  }, [postId])
 
   if (loading) {
     return <p>Loading...</p>
   } 
+
+
+  const handleClick = (id) => {
+    setPostId(id);
+  }
   
   if (!loading && result){
-    console.log(result)
-  }
+    return <div>
 
-  return <p>oi</p>
+      {result.length > 0 ? result.map(p => (
+        <div key={`post-${p.id}`} onClick={() => handleClick(p.id)}>
+          <p>{p.title}</p>
+        </div>
+      )):(
+        <div onClick={() => handleClick('')}>
+          <p>{result.title}</p>
+        </div>
+      )}
+
+    </div>
+  }
 }
