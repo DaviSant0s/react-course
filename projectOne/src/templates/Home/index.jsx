@@ -1,113 +1,80 @@
-import { useEffect, useRef } from "react";
-import { useState } from "react";
+import { useCallback, useEffect } from "react"
+import { useState } from "react"
 
-const isObjectEqual = (objA, objB) => {
-  return JSON.stringify(objA) === JSON.stringify(objB);
+const useAsync = (asyncFunction, shuldRun) => {
+  const [ state, setState ] = useState({
+    result: null,
+    error: null, 
+    status: 'idle',
+  });
+  
+  const run = useCallback( async () => {
+    console.log('EFFECT', new Date().toLocaleDateString())
+
+    setState({
+      result: null,
+      error: null, 
+      status: 'pending',
+    });
+
+
+    return asyncFunction()
+      .then(response => {
+        setState({
+          result: response,
+          error: null, 
+          status: 'settled',
+        });
+      })
+      .catch(err => {
+        setState({
+          result: null,
+          error: err, 
+          status: 'error',
+        });
+      });
+  }, [asyncFunction]);
+
+  useEffect(() => {
+    if (shuldRun){
+      run();
+    }
+  }, [run, shuldRun])
+
+  
+
+  return [run, state.result, state.error, state.status]
 }
 
-const useFetch = (url, options) => {
-  const [ result, setResult ] = useState(null);
-  const [ loading, setLoading ] = useState(false);
-  const [ shouldLoad, setShouldLoad ] = useState(false);
-  const urlRef = useRef(url);
-  const optionsRef = useRef(options);
-
-  useEffect(() => {
-    let changed = false;
-
-    if (!isObjectEqual(url, urlRef.current)){
-      urlRef.current = url;
-      changed = true;
-    }
-
-    if (!isObjectEqual(options, optionsRef.current)){
-      optionsRef.current = options;
-    }
-
-    if (changed){
-      setShouldLoad(s => !s);
-      changed = true;
-    }
-  }, [url, options])
-
-  useEffect(() => {
-    let wait = false;
-    console.log('EFFECT', new Date().toLocaleString());
-    console.log(optionsRef.current.Headers);
-
-    setLoading(true);
-
-    const fetchData = async () => {
-      
-      await new Promise(r => setTimeout(r, 3000));
-
-      try{
-        const response = await fetch(urlRef.current, optionsRef.current);
-        const jsonResult = await response.json();
-
-
-        if (!wait){
-          setResult(jsonResult);
-          setLoading(false);
-        }
-
-
-      } catch(e){
-
-        if (!wait){
-          setLoading(false);
-        }
-        throw e;
-      }
-      
-    }
-
-    fetchData();
-
-    return () => {
-      wait = true;
-    }
-    
-  }, [shouldLoad]);
-
-  return[result, loading]
+const fetchData = async () => {
+  const data = await fetch('https://jsonplaceholder.typicode.com/posts');
+  const json = await data.json();
+  return json;
 }
 
 export const Home = () => {
-  // 123456789
-  const [ postId, setPostId ] = useState('');
-  const [ result, loading ] = useFetch('https://jsonplaceholder.typicode.com/posts/' + postId, {
-    Headers: {
-      abc: '2' + postId,
-    },
-  });
-
-  useEffect(() => {
-    console.log('ID DO POST ', postId);
-  }, [postId])
-
-  if (loading) {
-    return <p>Loading...</p>
-  } 
+  const [ reFetchData, result, error, status ] = useAsync(fetchData, true);   
 
 
-  const handleClick = (id) => {
-    setPostId(id);
+  const handleClick = () => {
+    reFetchData();
   }
-  
-  if (!loading && result){
-    return <div>
 
-      {result.length > 0 ? result.map(p => (
-        <div key={`post-${p.id}`} onClick={() => handleClick(p.id)}>
-          <p>{p.title}</p>
-        </div>
-      )):(
-        <div onClick={() => handleClick('')}>
-          <p>{result.title}</p>
-        </div>
-      )}
 
-    </div>
+  if (status === 'idle'){
+    return <p>idle: Nada executando</p>
   }
+  if (status === 'pending'){
+    return <p>pending: Loading...</p>
+  }
+
+  if (status === 'error'){
+    return <pre>error: {error.message}</pre>
+  }
+  if (status === 'settled'){
+    return <pre onClick={handleClick}>settled: {JSON.stringify(result, null, 2)}</pre>
+  }
+
+
+  return 'ixi, deu ruim!';
 }
