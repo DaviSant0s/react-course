@@ -1,4 +1,4 @@
-import { Children, cloneElement, useState } from "react";
+import { Children, cloneElement, createContext, useState } from "react";
 
 const s = {
   style: {
@@ -6,11 +6,18 @@ const s = {
   },
 };
 
+const TurnOnOffContext = createContext();
+
 const TurnOnOff = ({children}) => {
   const [isOn, setIsOn] = useState(false);
   const onTurn = () => setIsOn(s => !s);
 
   return Children.map(children, child => {
+    
+    if (typeof child.type === 'string'){
+      return child;
+    }
+
     const newChild = cloneElement(child, {
       isOn,
       onTurn
@@ -39,11 +46,12 @@ export const Home = () => {
   return (
     <TurnOnOff>
 
-      <TurnedOn><P>ESTÁ ON</P></TurnedOn>
-
-      <TurnedOff><P>ESTÁ OFF</P></TurnedOff>
-
-      <TurnButton {...s}/>
+      <div>
+        <TurnedOn><P>ESTÁ ON</P></TurnedOn>
+        <TurnedOff><P>ESTÁ OFF</P></TurnedOff>
+        <p>oi</p>
+        <TurnButton {...s}/>
+      </div>
 
     </TurnOnOff >
   );
