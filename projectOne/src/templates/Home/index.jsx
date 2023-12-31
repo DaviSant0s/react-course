@@ -1,6 +1,11 @@
-import { useState } from "react";
-import { LazyComponent } from "./lazy-component";
+import React, { Suspense, useState } from "react";
 
+const loadComponent = () => {
+  console.log('componente carregando...');
+  return import("./lazy-component");
+};
+
+const LazyComponent = React.lazy(loadComponent);
 
 export const Home = () => {
   const [show, setShow] = useState(false);
@@ -8,9 +13,12 @@ export const Home = () => {
   return (
     <div>
       <p>
-        <button onClick={() => setShow(s => !s)}>show {show ? 'ta na tela' : 'não ta na tela'}</button>
+        <button onMouseOver={loadComponent} onClick={() => setShow(s => !s)}>show {show ? 'ta na tela' : 'não ta na tela'}</button>
       </p>
-      {show && <LazyComponent/>}
+      <Suspense fallback={<p>Carregando...</p>}>
+        {show && <LazyComponent/>}
+      </Suspense>
+      
     </div>
   );
 };

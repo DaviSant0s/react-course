@@ -1,7 +1,4 @@
-
-export const LazyComponent = () => {
-
-
+const LazyComponent = () => {
     return (
       <div>
         <p>
@@ -10,3 +7,5 @@ export const LazyComponent = () => {
       </div>
     );
   };
+
+  export default LazyComponent;
