@@ -2,6 +2,8 @@ import { initialState } from './data';
 import * as types from './types';
 
 export const reducer = (state, action) => {
+    console.log(action);
+
     switch(action.type){
         case types.INCREASE:
             return { ...state, counter: state.counter + 1};
@@ -18,5 +20,6 @@ export const reducer = (state, action) => {
         case types.ASYNC_INCREASE_ERROR:
             return { ...state, loading: false};
     }
+    
     return state;
 }
