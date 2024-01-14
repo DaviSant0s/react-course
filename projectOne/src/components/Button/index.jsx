@@ -1,10 +1,10 @@
 import { useCounterContext } from '../../context/CounterContext';
 import './styles.css';
 
-export default function Button({ children, onButtonClick }) {
+export default function Button({ children, onButtonClick, disabled = false }) {
 
   return (
-    <button className='buttonComponent'  onClick={onButtonClick}>
+    <button disabled={disabled} className='buttonComponent'  onClick={onButtonClick}>
         {children}
     </button>
   )

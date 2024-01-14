@@ -14,7 +14,7 @@ export const reducer = (state, action) => {
         case types.SET_COUNTER:
             return { ...state, ...action.payload };
         case types.ASYNC_INCREASE_START:
-            return { ...state, loading: true };
+            return { ...state, loading: true};
         case types.ASYNC_INCREASE_END:
             return { ...state, loading: false , counter: state.counter + 1};
         case types.ASYNC_INCREASE_ERROR:
