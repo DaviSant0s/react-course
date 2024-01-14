@@ -1,0 +1,20 @@
+.buttonComponent{
+    appearance: none;
+    font-size: 20px;
+    border-radius: 5px;
+    border: 2px solid rgb(198, 197, 197);
+    background-color: rgba(247, 246, 246, 0.646);
+    width: 150px;
+    height: 40px;
+    margin-left: 2px;
+    margin-bottom: 2px;
+    cursor: pointer;
+
+    transition: all 0.05s ease-in-out;
+
+}
+
+.buttonComponent:hover{
+    box-shadow: 0px 0px 6px rgba(177, 176, 176, 0.589);
+    background-color: rgba(247, 246, 246, 0.646);
+}
