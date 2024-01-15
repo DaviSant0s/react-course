@@ -12,8 +12,8 @@ root.render(
   <BrowserRouter>
     <Menu/>
     <Switch>
-      <Route path='/' exact component={App}/>
-      <Route path='/abc' exact  component={Abc}/>
+      <Route path='/abc/:slug/:id'   component={Abc}/>
+      <Route path='/'  component={App}/>
     </Switch>
   </BrowserRouter>
   </>
