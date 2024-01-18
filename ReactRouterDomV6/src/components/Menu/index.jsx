@@ -9,6 +9,7 @@ export function Menu() {
         <li><Link to='/about'>About</Link></li>
         <li><Link to='/posts'>Posts</Link></li>
         <li><Link to='/posts/24'>Post 10</Link></li>
+        <li><Link to='/redirect'>Redirect</Link></li>
       </ul>
     </nav>
   )
